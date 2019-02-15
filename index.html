@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="Robert Aboukhalil">
+        <title>jq kung fu</title>
+
+        <!-- Bootstrap core CSS -->
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+        <style>
+            body { padding-top: 5rem; }
+            .starter-template { text-align: center; }
+            #error { color: red; }
+        </style>
+
+        <!-- Custom styles for this template -->
+        <link href="starter-template.css" rel="stylesheet">
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+            <a class="navbar-brand" href="#">jq kung fu</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+                <ul class="navbar-nav mr-auto"></ul>
+                <div>
+                    <a style="color:#ccc" class="nav-link" href="https://github.com/robertaboukhalil/jqkungfu" target="_blank">Code on GitHub</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="starter-template">
+            <p class="lead">
+                A <a href="https://stedolan.github.io/jq/" target="_blank">jq</a> playground, written in <a href="https://github.com/robertaboukhalil/jqkungfu" target="_blank">WebAssembly</a>.
+            </p>
+        </div>
+
+        <main role="main" class="container">
+            <div class="row">
+                <div class="col-md-11">
+                    <small>Your query:</small>
+                </div>
+                <div class="col-md-11">
+                    <input id="query" class="form-control" type="text" value=".b" autofocus>
+                    <small>
+                        <span id="error"></span>
+                    </small>
+                    <br /><br />
+                </div>
+                <div class="col-md-1">
+                    <input id="btnRun" type="button" value="Go" class="form-control" disabled>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <small>Input JSON:</small>
+                    <div id="input" style="height: 500px;">{
+    "a": 123,
+    "b": {
+        "bb": 12,
+        "cc": 45
+    },
+    "c": 789
+}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row small">
+                        <div class="col-md-3">
+                            Output JSON:
+                        </div>
+                        <div class="col-md-9">
+                            <input class="jq-options" type="checkbox" data-cli="-c"> Compact
+                            &nbsp;&nbsp;
+                            <input class="jq-options" type="checkbox" data-cli="-s"> Sort Keys
+                        </div>
+                    </div>
+                    <div id="output" style="height: 500px;">{
+  "bb": 12,
+  "cc": 45
+}</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Main logic -->
+        <script type="text/javascript">
+        // WebAssembly module config
+        var STDOUT = [],
+            STDERR = [],
+            FILE_DATA = "/tmp/data.json";
+        var Module = {
+            // Don't run main on page load
+            noInitialRun: true,
+
+            // Print functions
+            print: stdout => STDOUT.push(stdout),
+            printErr: stderr => STDERR.push(stderr),
+
+            // When the module is ready
+            onRuntimeInitialized: function() {
+                document.getElementById("btnRun").disabled = false;
+            }
+        };
+
+        // Utility function to run jq
+        function jq(jsonStr, query, options)
+        {
+            // Custom jq options.
+            // Default = -M = disable colors
+            var mainOptions = [ "-M" ];
+            if(options != null)
+                mainOptions = mainOptions.concat(options);
+
+            // Create file from object
+            FS.writeFile(FILE_DATA, jsonStr);
+
+            // Clear previous stdout/stderr before launching jq
+            STDOUT = [];
+            STDERR = [];
+
+            // Launch jq's main() function
+            //   -M to disable colors
+            //   -r to output in raw format
+            //   -c to output in compressed format
+            mainOptions = mainOptions.concat([ query, FILE_DATA ]);
+            Module.callMain(mainOptions);
+
+            // Re-open stdout/stderr after jq closes them
+            FS.streams[1] = FS.open("/dev/stdout", "w");
+            FS.streams[2] = FS.open("/dev/stderr", "w");
+
+            return {
+                stdout: STDOUT.join("\n"),
+                stderr: `${STDERR[0]}\n${STDERR[1]}`
+            }
+        }
+
+        // Launch jq on current field values
+        function launch()
+        {
+            var elError = document.getElementById("error"),
+                elQuery = document.getElementById("query"),
+                elOptionCompact = document.getElementById("option-compact");
+
+            var options = [];
+            if(elOptionCompact.checked)
+                options.push("-c");
+
+            var out = jq(editorInput.getValue(), elQuery.value, options);
+            elError.innerHTML = "";
+            if(out.stdout != "")
+                editorOutput.setValue(out.stdout, 1);
+            else
+                elError.innerHTML = out.stderr;
+        }
+
+        // On page load
+        document.addEventListener("DOMContentLoaded", function()
+        {
+            // Launch jq when click button
+            document.getElementById("btnRun").addEventListener("click", launch);
+
+            // Setup ACE editors
+            var elInput = document.getElementById("input"),
+                elOutput = document.getElementById("output"),
+                elQuery = document.getElementById("query"),
+                elsOptions = document.getElementsByClassName("jq-options");
+            editorInput = ace.edit(elInput, { mode: "ace/mode/json", selectionStyle: "text" });
+            editorOutput = ace.edit(elOutput, { mode: "ace/mode/json", selectionStyle: "text" });
+
+            // Logic for auto-launching jq
+            var timerIsTyping = null;
+            elQuery.addEventListener("keyup", function(e)
+            {
+                // Detect pressing Enter
+                if(e.keyCode == 13)
+                    launch();
+
+                // Auto launch after 300ms post changing the query
+                clearTimeout(timerIsTyping);
+                timerIsTyping = setTimeout(launch, 300);
+            });
+            elQuery.addEventListener("keydown", function(e){
+                clearTimeout(timerIsTyping);
+            });
+
+            // Output options
+            for(var el of elsOptions)
+                el.addEventListener("CheckboxStateChange", function(e){
+                    launch();
+                });
+        });
+        </script>
+
+        <!-- JS Libraries -->
+        <script src="jq.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.2/ace.js"></script>
+    </body>
+</html>
