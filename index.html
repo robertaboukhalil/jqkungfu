@@ -38,9 +38,12 @@
             <p class="lead">
                 A <a href="https://stedolan.github.io/jq/" target="_blank">jq</a> playground, written in <a href="https://github.com/robertaboukhalil/jqkungfu" target="_blank">WebAssembly</a>.
             </p>
+            <p id="loading" class="lead">
+                <img src="loading.gif" alt="Loading..." height="100">
+            </p>
         </div>
 
-        <main role="main" class="container">
+        <main id="jq" role="main" class="container" style="display: none">
             <div class="row">
                 <div class="col-md-11">
                     <small>Your query:</small>
@@ -60,7 +63,7 @@
             <div class="row">
                 <div class="col-md-6">
                     <small>Input JSON:</small>
-                    <div id="input" style="height: 500px;">{
+                    <div id="input" style="height: 50vh;">{
     "a": 123,
     "b": {
         "cc": 12,
@@ -74,13 +77,15 @@
                         <div class="col-md-3">
                             Output JSON:
                         </div>
-                        <div class="col-md-9">
-                            <input class="jq-options" type="checkbox" data-cli="-c"> Compact
+                        <div class="col-md-9 text-right">
+                            <input id="jq-options-compact" class="jq-options" type="checkbox" data-cli="-c">
+                            <label for="jq-options-compact">Compact</label>
                             &nbsp;&nbsp;
-                            <input class="jq-options" type="checkbox" data-cli="-S"> Sort Keys
+                            <input id="jq-options-sort" class="jq-options" type="checkbox" data-cli="-S">
+                            <label for="jq-options-sort">Sort Keys</label>
                         </div>
                     </div>
-                    <div id="output" style="height: 500px;">{
+                    <div id="output" style="height: 50vh;">{
   "cc": 12,
   "bb": 45
 }</div>
@@ -104,6 +109,8 @@
 
             // When the module is ready
             onRuntimeInitialized: function() {
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("jq").style.display = "block";
                 document.getElementById("btnRun").disabled = false;
             }
         };
@@ -114,7 +121,7 @@
             // Custom jq options.
             // Default = -M = disable colors
             var mainOptions = [ "-M" ];
-            if(options != null)
+            if(options != null && options.length > 0)
                 mainOptions = mainOptions.concat(options);
 
             // Create file from object
@@ -151,7 +158,10 @@
                 if(el.checked)
                     options.push(el.getAttribute("data-cli"));
 
+            // Call jq
             var out = jq(editorInput.getValue(), elQuery.value, options);
+
+            // Parse jq errors
             elError.innerHTML = "";
             if(out.stdout != "")
                 editorOutput.setValue(out.stdout, 1);
