@@ -63,8 +63,8 @@
                     <div id="input" style="height: 500px;">{
     "a": 123,
     "b": {
-        "bb": 12,
-        "cc": 45
+        "cc": 12,
+        "bb": 45
     },
     "c": 789
 }</div>
@@ -77,12 +77,12 @@
                         <div class="col-md-9">
                             <input class="jq-options" type="checkbox" data-cli="-c"> Compact
                             &nbsp;&nbsp;
-                            <input class="jq-options" type="checkbox" data-cli="-s"> Sort Keys
+                            <input class="jq-options" type="checkbox" data-cli="-S"> Sort Keys
                         </div>
                     </div>
                     <div id="output" style="height: 500px;">{
-  "bb": 12,
-  "cc": 45
+  "cc": 12,
+  "bb": 45
 }</div>
                 </div>
             </div>
@@ -125,9 +125,6 @@
             STDERR = [];
 
             // Launch jq's main() function
-            //   -M to disable colors
-            //   -r to output in raw format
-            //   -c to output in compressed format
             mainOptions = mainOptions.concat([ query, FILE_DATA ]);
             Module.callMain(mainOptions);
 
@@ -146,11 +143,13 @@
         {
             var elError = document.getElementById("error"),
                 elQuery = document.getElementById("query"),
-                elOptionCompact = document.getElementById("option-compact");
+                elsOptions = document.getElementsByClassName("jq-options");
 
+            // Collect options
             var options = [];
-            if(elOptionCompact.checked)
-                options.push("-c");
+            for(var el of elsOptions)
+                if(el.checked)
+                    options.push(el.getAttribute("data-cli"));
 
             var out = jq(editorInput.getValue(), elQuery.value, options);
             elError.innerHTML = "";
