@@ -49,7 +49,7 @@
                     <small>Your query:</small>
                 </div>
                 <div class="col-md-11">
-                    <input id="query" class="form-control" type="text" value=".b" autofocus>
+                    <input id="query" class="form-control" type="text" value=".[1].email" autofocus>
                     <small>
                         <span id="error"></span>
                     </small>
@@ -62,15 +62,37 @@
 
             <div class="row">
                 <div class="col-md-6">
-                    <small>Input JSON:</small>
-                    <div id="input" style="height: 50vh;">{
-    "a": 123,
-    "b": {
-        "cc": 12,
-        "bb": 45
-    },
-    "c": 789
-}</div>
+                    <small>Input JSON <small>(sample data from <a href="https://jsonplaceholder.typicode.com/" target="_blank">JSONPlaceholder</a>):</small></small>
+                    <div id="input" style="height: 50vh;">[
+  {
+    "postId": 1,
+    "id": 4,
+    "name": "alias odio sit",
+    "email": "Lew@alysha.tv",
+    "body": "non et atque\noccaecati deserunt quas accusantium unde odit nobis qui voluptatem\nquia voluptas consequuntur itaque dolor\net qui rerum deleniti ut occaecati"
+  },
+  {
+    "postId": 1,
+    "id": 5,
+    "name": "vero eaque aliquid doloribus et culpa",
+    "email": "Hayden@althea.biz",
+    "body": "harum non quasi et ratione\ntempore iure ex voluptates in ratione\nharum architecto fugit inventore cupiditate\nvoluptates magni quo et"
+  },
+  {
+    "postId": 2,
+    "id": 6,
+    "name": "et fugit eligendi deleniti quidem qui sint nihil autem",
+    "email": "Presley.Mueller@myrl.com",
+    "body": "doloribus at sed quis culpa deserunt consectetur qui praesentium\naccusamus fugiat dicta\nvoluptatem rerum ut voluptate autem\nvoluptatem repellendus aspernatur dolorem in"
+  },
+  {
+    "postId": 2,
+    "id": 7,
+    "name": "repellat consequatur praesentium vel minus molestias voluptatum",
+    "email": "Dallas@ole.me",
+    "body": "maiores sed dolores similique labore et inventore et\nquasi temporibus esse sunt id et\neos voluptatem aliquam\naliquid ratione corporis molestiae mollitia quia et magnam dolor"
+  }
+]</div>
                 </div>
                 <div class="col-md-6">
                     <div class="row small">
@@ -86,11 +108,15 @@
                         </div>
                     </div>
                     <div id="output" style="height: 50vh;">{
-  "cc": 12,
-  "bb": 45
+  "postId": 1,
+  "id": 5,
+  "name": "vero eaque aliquid doloribus et culpa",
+  "email": "Hayden@althea.biz",
+  "body": "harum non quasi et ratione\ntempore iure ex voluptates in ratione\nharum architecto fugit inventore cupiditate\nvoluptates magni quo et"
 }</div>
                 </div>
             </div>
+
         </main>
 
         <!-- Main logic -->
@@ -98,7 +124,13 @@
         // WebAssembly module config
         var STDOUT = [],
             STDERR = [],
-            FILE_DATA = "/tmp/data.json";
+            FILE_DATA = "/tmp/data.json",
+            CONFIG_EDITOR = {
+                mode: "ace/mode/json",
+                selectionStyle: "text",
+                tabSize: 2
+            };
+
         var Module = {
             // Don't run main on page load
             noInitialRun: true,
@@ -180,8 +212,10 @@
                 elOutput = document.getElementById("output"),
                 elQuery = document.getElementById("query"),
                 elsOptions = document.getElementsByClassName("jq-options");
-            editorInput = ace.edit(elInput, { mode: "ace/mode/json", selectionStyle: "text" });
-            editorOutput = ace.edit(elOutput, { mode: "ace/mode/json", selectionStyle: "text" });
+            
+            editorInput = ace.edit(elInput, CONFIG_EDITOR);
+            editorOutput = ace.edit(elOutput, CONFIG_EDITOR);
+            editorInput.getSession().on("change", launch);
 
             // Logic for auto-launching jq
             var timerIsTyping = null;
@@ -201,9 +235,7 @@
 
             // Output options
             for(var el of elsOptions)
-                el.addEventListener("CheckboxStateChange", function(e){
-                    launch();
-                });
+                el.addEventListener("CheckboxStateChange", launch);
         });
         </script>
 
