@@ -1,6 +1,6 @@
 # jq kungfu
 
-A jq playground, written in WebAssembly.
+A [jq](https://github.com/stedolan/jq/) playground, written in WebAssembly.
 
 ## How?
 
