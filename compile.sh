@@ -7,6 +7,12 @@
 cd jq
 git submodule update --init
 
+# Edit main.c so that reset option flags to 0 every time we call the main() function
+# This is needed because we're not exiting after each main() call; otherwise, the
+# "Sort Keys" feature wouldn't work
+MAIN_FN="int main(int argc, char\* argv\[\]) {"
+sed -i "s/${MAIN_FN}/${MAIN_FN} options = 0; /" src/main.c | grep "int main"
+
 # Generate ./configure file
 autoreconf -fi
 
