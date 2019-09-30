@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="Robert Aboukhalil">
+        <title>jq kung fu</title>
+
+        <!-- Bootstrap core CSS -->
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+        <style>
+            body { padding-top: 5rem; }
+            .starter-template { text-align: center; }
+            #error { color: red; }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+            <a class="navbar-brand" href="#">jq kung fu</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+                <ul class="navbar-nav mr-auto"></ul>
+                <div>
+                    <a style="color:#ccc" class="nav-link" href="https://github.com/robertaboukhalil/jqkungfu" target="_blank">Code on GitHub</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="starter-template">
+            <p class="lead">
+                A <a href="https://stedolan.github.io/jq/" target="_blank">jq</a> playground, written in <a href="https://github.com/robertaboukhalil/jqkungfu" target="_blank">WebAssembly</a>.
+            </p>
+            <p id="loading" class="lead">
+                <img src="loading.gif" alt="Loading..." height="100">
+            </p>
+        </div>
+
+        <main id="jq" role="main" class="container" style="display: none">
+            <div class="row">
+                <div class="col-md-11">
+                    <small>Your query:</small>
+                </div>
+                <div class="col-md-11">
+                    <input id="query" class="form-control" type="text" value=".[1]" autofocus>
+                    <small>
+                        <span id="error"></span>
+                    </small>
+                    <br /><br />
+                </div>
+                <div class="col-md-1">
+                    <input id="btnRun" type="button" value="Go" class="form-control" disabled>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <small>Input JSON <small>(sample data from <a href="https://jsonplaceholder.typicode.com/" target="_blank">JSONPlaceholder</a>):</small></small>
+                    <div id="input" style="height: 50vh;">[
+  {
+    "postId": 1,
+    "id": 4,
+    "name": "alias odio sit",
+    "email": "Lew@alysha.tv",
+    "body": "non et atque\noccaecati deserunt quas accusantium unde odit nobis qui voluptatem\nquia voluptas consequuntur itaque dolor\net qui rerum deleniti ut occaecati"
+  },
+  {
+    "postId": 1,
+    "id": 5,
+    "name": "vero eaque aliquid doloribus et culpa",
+    "email": "Hayden@althea.biz",
+    "body": "harum non quasi et ratione\ntempore iure ex voluptates in ratione\nharum architecto fugit inventore cupiditate\nvoluptates magni quo et"
+  },
+  {
+    "postId": 2,
+    "id": 6,
+    "name": "et fugit eligendi deleniti quidem qui sint nihil autem",
+    "email": "Presley.Mueller@myrl.com",
+    "body": "doloribus at sed quis culpa deserunt consectetur qui praesentium\naccusamus fugiat dicta\nvoluptatem rerum ut voluptate autem\nvoluptatem repellendus aspernatur dolorem in"
+  },
+  {
+    "postId": 2,
+    "id": 7,
+    "name": "repellat consequatur praesentium vel minus molestias voluptatum",
+    "email": "Dallas@ole.me",
+    "body": "maiores sed dolores similique labore et inventore et\nquasi temporibus esse sunt id et\neos voluptatem aliquam\naliquid ratione corporis molestiae mollitia quia et magnam dolor"
+  }
+]</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row small">
+                        <div class="col-md-3">
+                            Output JSON:
+                        </div>
+                        <div class="col-md-9 text-right">
+                            <input id="jq-options-compact" class="jq-options" type="checkbox" data-cli="-c">
+                            <label for="jq-options-compact">Compact</label>
+                            &nbsp;&nbsp;
+                            <input id="jq-options-sort" class="jq-options" type="checkbox" data-cli="-S">
+                            <label for="jq-options-sort">Sort Keys</label>
+                        </div>
+                    </div>
+                    <div id="output" style="height: 50vh;">{
+  "postId": 1,
+  "id": 5,
+  "name": "vero eaque aliquid doloribus et culpa",
+  "email": "Hayden@althea.biz",
+  "body": "harum non quasi et ratione\ntempore iure ex voluptates in ratione\nharum architecto fugit inventore cupiditate\nvoluptates magni quo et"
+}</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <hr />
+                    <!-- <br /> -->
+                    <p>Want to learn how to build WebAssembly applications like this one? Check out my book <a href="http://levelupwasm.com" target="_blank">Level Up with WebAssembly</a>.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Main logic -->
+        <script type="text/javascript">
+        // WebAssembly module config
+        var STDOUT = [],
+            STDERR = [],
+            FILE_DATA = "/tmp/data.json",
+            CONFIG_EDITOR = {
+                mode: "ace/mode/json",
+                selectionStyle: "text",
+                tabSize: 2
+            };
+
+        var Module = {
+            // Don't run main on page load
+            noInitialRun: true,
+
+            // Print functions
+            print: stdout => STDOUT.push(stdout),
+            printErr: stderr => STDERR.push(stderr),
+
+            // When the module is ready
+            onRuntimeInitialized: function() {
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("jq").style.display = "block";
+                document.getElementById("btnRun").disabled = false;
+            }
+        };
+
+        // Utility function to run jq
+        function jq(jsonStr, query, options)
+        {
+            // Custom jq options.
+            // Default = -M = disable colors
+            var mainOptions = [ "-M" ];
+            if(options != null && options.length > 0)
+                mainOptions = mainOptions.concat(options);
+
+            // Create file from object
+            FS.writeFile(FILE_DATA, jsonStr);
+
+            // Clear previous stdout/stderr before launching jq
+            STDOUT = [];
+            STDERR = [];
+
+            // Launch jq's main() function
+            mainOptions = mainOptions.concat([ query, FILE_DATA ]);
+            Module.callMain(mainOptions);
+
+            // Re-open stdout/stderr after jq closes them
+            FS.streams[1] = FS.open("/dev/stdout", "w");
+            FS.streams[2] = FS.open("/dev/stderr", "w");
+
+            return {
+                stdout: STDOUT.join("\n"),
+                stderr: `${STDERR[0]}\n${STDERR[1]}`
+            }
+        }
+
+        // Launch jq on current field values
+        function launch()
+        {
+            var elError = document.getElementById("error"),
+                elQuery = document.getElementById("query"),
+                elsOptions = document.getElementsByClassName("jq-options");
+
+            // Collect options
+            var options = [];
+            for(var el of elsOptions)
+                if(el.checked)
+                    options.push(el.getAttribute("data-cli"));
+
+            // Call jq
+            var out = jq(editorInput.getValue(), elQuery.value, options);
+
+            // Parse jq errors
+            elError.innerHTML = "";
+            if(out.stdout != "")
+                editorOutput.setValue(out.stdout, 1);
+            else
+                elError.innerHTML = out.stderr;
+        }
+
+        // On page load
+        document.addEventListener("DOMContentLoaded", function()
+        {
+            // Launch jq when click button
+            document.getElementById("btnRun").addEventListener("click", launch);
+
+            // Setup ACE editors
+            var elInput = document.getElementById("input"),
+                elOutput = document.getElementById("output"),
+                elQuery = document.getElementById("query"),
+                elsOptions = document.getElementsByClassName("jq-options");
+            
+            editorInput = ace.edit(elInput, CONFIG_EDITOR);
+            editorOutput = ace.edit(elOutput, CONFIG_EDITOR);
+            editorInput.getSession().on("change", launch);
+
+            // Logic for auto-launching jq
+            var timerIsTyping = null;
+            elQuery.addEventListener("keyup", function(e)
+            {
+                // Detect pressing Enter
+                if(e.keyCode == 13)
+                    launch();
+
+                // Auto launch after 300ms post changing the query
+                clearTimeout(timerIsTyping);
+                timerIsTyping = setTimeout(launch, 300);
+            });
+            elQuery.addEventListener("keydown", function(e){
+                clearTimeout(timerIsTyping);
+            });
+
+            // Output options
+            for(var el of elsOptions)
+                el.addEventListener("change", launch);
+        });
+        </script>
+
+        <!-- JS Libraries -->
+        <script src="jq.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.2/ace.js"></script>
+    </body>
+</html>
