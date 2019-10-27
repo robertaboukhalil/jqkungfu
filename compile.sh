@@ -6,6 +6,7 @@
 # Update jq repo and its submodules
 cd jq
 git submodule update --init
+git submodule update --init
 
 # Edit main.c so that reset option flags to 0 every time we call the main() function
 # This is needed because we're not exiting after each main() call; otherwise, the
@@ -32,4 +33,5 @@ cd ..
 # Compile to WebAssembly (we need .js/.wasm files; we can't execute jq.o in the browser)
 # - Use "ERROR_ON_UNDEFINED_SYMBOLS=0" to ignore "undefined symbol: llvm_fma_f64" warning
 emcc jq.o -o jq.js \
+  -s EXTRA_EXPORTED_RUNTIME_METHODS='["callMain"]' \
   -s ERROR_ON_UNDEFINED_SYMBOLS=0
