@@ -115,6 +115,7 @@
                 document.getElementById("loading").style.display = "none";
                 document.getElementById("jq").style.display = "block";
                 document.getElementById("btnRun").disabled = false;
+                launch();
             }
         };
 
@@ -165,7 +166,7 @@
                 if(el.checked)
                     options.push(el.getAttribute("data-cli"));
             // Call jq
-            var out = jq(inputJson, editorQuery.getValue().replace(/[\r\n\t]/g, " "), options);
+            var out = jq(inputJson, editorQuery.getValue().replace(/\s/g, " "), options);
 
             // Parse jq errors
             elError.innerHTML = "";
@@ -213,7 +214,6 @@
                 el.addEventListener("change", launch);
             editorQuery.navigateFileEnd();
             editorInput.navigateFileEnd();
-            setTimeout(launch, 500);
         });
         </script>
 
