@@ -1,10 +1,17 @@
 # jq kungfu
 
-A [jq](https://github.com/stedolan/jq/) playground, written in WebAssembly.
+A [jq](https://github.com/stedolan/jq/) playground, powered by WebAssembly.
+
+## Links
+
+* [jq Playground](https://jqkungfu.com)
+* [jq Tutorial](https://sandbox.bio/tutorials?id=jq-intro)
+* [Use jq in your own web apps](https://github.com/biowasm/biowasm/tree/main/tools/jq#jqwasm)
+
 
 ## How?
 
-jqkungfu was built by compiling [jq](https://github.com/stedolan/jq/) into WebAssembly, so that it can run in the browser.
+jqkungfu was built by compiling [jq](https://github.com/stedolan/jq/) to WebAssembly, so that it runs in the browser.
 
 The advantages of this approach are:
 
