@@ -1,0 +1,13 @@
+diff --git a/src/main.c b/src/main.c
+index ebfddf9..e821a45 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -247,7 +247,7 @@ static void debug_cb(void *data, jv input) {
+   fprintf(stderr, "\n");
+ }
+ 
+-int main(int argc, char* argv[]) {
++int main(int argc, char* argv[]) { options = 0;  options = 0; 
+   jq_state *jq = NULL;
+   int ret = JQ_OK_NO_OUTPUT;
+   int compiled = 0;
