@@ -12,12 +12,16 @@
 
         <style>
             body { padding-top: 5rem; }
-            .starter-template { text-align: center; }
             #error { color: red; }
         </style>
     </head>
     <body>
-        <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <nav class="navbar navbar-dark bg-warning fixed-top mt-0" style="padding-top: 2px;">
+            <div class="text-center text-dark small w-100">
+                Check out sandbox.bio's jq playground at <a href="https://sandbox.bio/playgrounds?id=jq">sandbox.bio/playgrounds?id=jq</a>
+            </div>
+        </nav>
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top mt-4">
             <a class="navbar-brand" href="#">jq kung fu</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -31,7 +35,7 @@
             </div>
         </nav>
 
-        <div class="starter-template">
+        <div class="text-center mt-5">
             <p class="lead">
                 A <a href="https://stedolan.github.io/jq/" target="_blank">jq</a> playground, written in <a href="https://github.com/robertaboukhalil/jqkungfu" target="_blank">WebAssembly</a>.
             </p>

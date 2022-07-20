@@ -4,7 +4,8 @@ A [jq](https://github.com/stedolan/jq/) playground, powered by WebAssembly.
 
 ## Links
 
-* [jq Playground](https://jqkungfu.com)
+* [jqkungfu.com](https://jqkungfu.com)
+* [sandbox.bio's jq Playground](https://jqkungfu.com)
 * [jq Tutorial](https://sandbox.bio/tutorials?id=jq-intro)
 * [Use jq in your own web apps](https://github.com/biowasm/biowasm/tree/main/tools/jq#jqwasm)
 
@@ -24,7 +25,7 @@ The advantages of this approach are:
 To launch jqkungfu locally:
 
 ```bash
-python -m http.server 9999
+python3 -m http.server 9999
 ```
 
 Then open [http://localhost:9999](http://localhost:9999) in your browser.
