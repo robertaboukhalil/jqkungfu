@@ -52,7 +52,7 @@
 					<small>Your query:</small>
 				</div>
 				<div class="col-md-11">
-					<input id="query" class="form-control" type="text" value=".[1]" autofocus>
+					<textarea data-autoresize class="form-control" id="query" autofocus>.[1]</textarea>
 					<small>
 						<span id="error"></span>
 					</small>
@@ -219,6 +219,17 @@
 		{
 			// Launch jq when click button
 			document.getElementById("btnRun").addEventListener("click", launch);
+
+			// Auto-resizing input textarea (https://stephanwagner.me/auto-resizing-textarea-with-vanilla-javascript)
+			document.querySelectorAll("[data-autoresize]").forEach(function (element) {
+				element.style.boxSizing = "border-box";
+				const offset = element.offsetHeight - element.clientHeight;
+				element.addEventListener("input", function (event) {
+					event.target.style.height = "auto";
+					event.target.style.height = event.target.scrollHeight + offset + "px";
+				});
+				element.removeAttribute("data-autoresize");
+			});
 
 			// Setup ACE editors
 			var elInput = document.getElementById("input"),
