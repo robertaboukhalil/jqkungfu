@@ -37,15 +37,15 @@ To compile jq to WebAssembly, run the `compile.sh` code within an environment th
 
 To set up your environment:
 
-```bash
+```sh
 # Make sure to use "--recursive" so the jq submodule is initialized
 $ git clone --recursive https://github.com/robertaboukhalil/jqkungfu.git
 
 # Build the Docker image with needed dependencies
-$ docker build -t jqkungfu .
+$ docker buildx build -t jqkungfu .
 
 # Compile to WebAssembly
-$ docker run --rm -it -v $(pwd):/src --entrypoint ./compile.sh jqkungfu
+$ docker run --rm -it -v .:/src --entrypoint ./compile.sh jqkungfu
 ```
 
 ## Learn More
