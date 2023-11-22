@@ -1,12 +1,13 @@
 #!/usr/bin/env sh
 
+# Echo function that behaves consistently across shells
+echo() { printf '%s\n' "$*";}
+
 # Compile jq to WebAssembly
 
 # Need Emscripten installed
 if ! command -v emcc > /dev/null 2>&1; then
-  printf '%s\n' \
-    'You need Emscripten to compile jq to WebAssembly.' \
-    'See the setup instructions in the README file.'
+  echo 'You need Emscripten to compile jq to WebAssembly. See the setup instructions in the README file.'
   exit 2
 fi >&2
 
@@ -32,5 +33,5 @@ emmake make \
   EXEEXT=.js \
   CFLAGS="-O2 -s EXPORTED_RUNTIME_METHODS=['callMain']"
 
-mkdir -p -- ../build/
-mv -- jq.js jq.wasm ../build/
+mkdir -p ../build/
+mv jq.js jq.wasm ../build/
