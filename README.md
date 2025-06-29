@@ -5,8 +5,8 @@ A [jq](https://github.com/stedolan/jq/) playground, powered by WebAssembly.
 ## Links
 
 * [jqkungfu.com](https://jqkungfu.com)
-* [sandbox.bio's jq Playground](https://jqkungfu.com)
-* [jq Tutorial](https://sandbox.bio/tutorials?id=jq-intro)
+* [sandbox.bio's jq Playground](https://sandbox.bio/playgrounds/jq)
+* [jq Tutorial](https://sandbox.bio/tutorials/jq-intro)
 * [Use jq in your own web apps](https://github.com/biowasm/biowasm/tree/main/tools/jq#jqwasm)
 
 ## How?
